@@ -9,7 +9,7 @@
       placeholder="Search"
     />
     <!-- 할일입력 -->
-    <TodoForm @add-todo="addTodo" />
+    <TodoForm @add-todo="addTodo" style="margin-top: 20px" />
     <!-- 서버에러 출력 -->
     <div style="color: red">{{ error }}</div>
     <!-- 목록없음 안내 -->
@@ -20,6 +20,25 @@
       @delete-todo="deleteTodo"
       @toggle-todo="toggleTodo"
     />
+
+    <!-- paginaiton -->
+    <nav aria-label="Page navigation" style="margin-top: 20px">
+      <ul class="pagination">
+        <li class="page-item">
+          <a class="page-link" href="#" aria-label="Previous">
+            <span aria-hidden="true">&laquo;</span>
+          </a>
+        </li>
+        <li class="page-item"><a class="page-link" href="#">1</a></li>
+        <li class="page-item"><a class="page-link" href="#">2</a></li>
+        <li class="page-item"><a class="page-link" href="#">3</a></li>
+        <li class="page-item">
+          <a class="page-link" href="#" aria-label="Next">
+            <span aria-hidden="true">&raquo;</span>
+          </a>
+        </li>
+      </ul>
+    </nav>
   </div>
 </template>
 <script>
@@ -34,6 +53,13 @@ export default {
   },
   setup() {
     const todos = ref([]);
+
+    // pagination 구현
+    const totalCount = ref(0);
+    const limit = 5;
+    const totalPage
+
+
     const searchText = ref("");
     const filterTodos = computed(() => {
       if (searchText.value) {
@@ -48,8 +74,10 @@ export default {
       try {
         const response = await axios.get("http://localhost:3000/todos");
         todos.value = response.data;
+        totalCount.value = 0;
+        page.value = 1;
+        totalPage.value = 0
       } catch (err) {
-        console.log("🚀 ~ 서버목록 호출에 실패했습니다.", err);
         err.value = "서버목록 호출에 실패했습니다";
       }
     };
@@ -65,7 +93,6 @@ export default {
         });
         todos.value.push(todo);
       } catch (err) {
-        console.log("🚀 에러입니다.", err);
         error.value = "목록추가 실패";
       }
     };
