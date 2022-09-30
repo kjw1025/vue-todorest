@@ -6,10 +6,11 @@
           <input
             type="checkbox"
             class="form-check-input"
-            :value="item.complete"
+            :checked="item.complete"
             @change="toggleTodo(index)"
           />
           <label
+            @click="moveToPage(item.id)"
             class="form-check-label"
             v-bind:class="{ todostyle: item.complete }"
             >{{ item.subject }}
@@ -26,6 +27,7 @@
 </template>
 
 <script>
+import { useRouter } from "vue-router";
 export default {
   props: ["todos"],
   emits: ["delete-todo", "toggle-todo"],
@@ -36,9 +38,22 @@ export default {
     const toggleTodo = (index) => {
       emit("toggle-todo", index);
     };
+
+    const router = useRouter();
+    const moveToPage = (id) => {
+      // router 를 이용해서 id 를 전송해준다.
+      // router.push(`/todos/${id}`);
+      router.push({
+        name: "Todo",
+        params: {
+          id,
+        },
+      });
+    };
     return {
       deleteTodo,
       toggleTodo,
+      moveToPage,
     };
   },
 };

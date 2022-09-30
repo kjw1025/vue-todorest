@@ -1,141 +1,133 @@
 <template>
-  <div class="container">
-    <h2>Todo List</h2>
-    <!-- 할일검색폼 -->
-    <input
-      class="form-control"
-      type="text"
-      v-model="searchText"
-      placeholder="Search"
-    />
-    <!-- 할일입력 -->
-    <TodoForm @add-todo="addTodo" style="margin-top: 20px" />
-    <!-- 서버에러 출력 -->
-    <div style="color: red">{{ error }}</div>
-    <!-- 목록없음 안내 -->
-    <div v-if="!todos.length">추가된 Todo가 없습니다.</div>
-    <!-- 할일목록 -->
-    <TodoList
-      :todos="filterTodos"
-      @delete-todo="deleteTodo"
-      @toggle-todo="toggleTodo"
-    />
-
-    <!-- paginaiton -->
-    <nav aria-label="Page navigation" style="margin-top: 20px">
-      <ul class="pagination">
-        <li class="page-item">
-          <a class="page-link" href="#" aria-label="Previous">
-            <span aria-hidden="true">&laquo;</span>
-          </a>
-        </li>
-        <li class="page-item"><a class="page-link" href="#">1</a></li>
-        <li class="page-item"><a class="page-link" href="#">2</a></li>
-        <li class="page-item"><a class="page-link" href="#">3</a></li>
-        <li class="page-item">
-          <a class="page-link" href="#" aria-label="Next">
-            <span aria-hidden="true">&raquo;</span>
-          </a>
-        </li>
-      </ul>
-    </nav>
-  </div>
+  <nav class="navbar navbar-expand-lg navbar-light bg-light">
+    <div class="container-fluid">
+      <RouterLink class="navbar-brand" :to="{ name: 'Home' }"
+        >My Todo</RouterLink
+      >
+      <button
+        class="navbar-toggler"
+        type="button"
+        data-bs-toggle="collapse"
+        data-bs-target="#navbarNav"
+        aria-controls="navbarNav"
+        aria-expanded="false"
+        aria-label="Toggle navigation"
+      >
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav">
+          <li class="nav-item">
+            <RouterLink
+              class="nav-link active"
+              aria-current="page"
+              :to="{ name: 'Home' }"
+              >Home</RouterLink
+            >
+          </li>
+          <li class="nav-item">
+            <RouterLink class="nav-link" :to="{ name: 'Todos' }"
+              >Todos</RouterLink
+            >
+          </li>
+          <li class="nav-item">
+            <RouterLink class="nav-link" :to="{ name: 'TodoCreate' }"
+              >Todo Create</RouterLink
+            >
+          </li>
+          <li class="nav-item">
+            <RouterLink class="nav-link" :to="{ name: 'About' }"
+              >About</RouterLink
+            >
+          </li>
+          <li class="nav-item">
+            <RouterLink class="nav-link" :to="{ name: 'Profile' }"
+              >Profile</RouterLink
+            >
+          </li>
+          <li class="nav-item">
+            <a
+              class="nav-link"
+              href="https://github.com/tarolong2/todorest"
+              target="_blank"
+              >Github</a
+            >
+          </li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+  <RouterView
+    @update-todo-toast="updateTodoToast"
+    @new-todo-toast="newTodoToast"
+    @update-load-fail-toast="updateLoadFailToast"
+    @update-todo-fail-toast="updateTodoFailToast"
+    @err-subject-toast="errSubjectToast"
+    @new-todo-fail-toast="newTodoFailToast"
+    @list-load-fail-toast="listLoadFailToast"
+    @delete-todo-toast="deleteTodoToast"
+    @delete-todo-fail="deleteTodoFailToast"
+  />
+  <ToastBox v-if="showToast" :message="toastMessage" :color="toastType" />
 </template>
 <script>
-import axios from "axios";
-import { computed, ref } from "vue";
-import TodoForm from "./components/TodoSimpleForm.vue";
-import TodoList from "./components/TodoList.vue";
+import ToastBox from "@/components/ToastBox.vue";
+import { useToast } from "@/composables/toast";
 export default {
   components: {
-    TodoForm,
-    TodoList,
+    ToastBox,
   },
   setup() {
-    const todos = ref([]);
+    // 안내창 관련
+    const { showToast, toastMessage, toastType, triggerToast } = useToast();
 
-    // pagination 구현
-    const totalCount = ref(0);
-    const limit = 5;
-    const totalPage
-
-
-    const searchText = ref("");
-    const filterTodos = computed(() => {
-      if (searchText.value) {
-        return todos.value.filter((todo) => {
-          return todo.subject.includes(searchText.value);
-        });
-      }
-      return todos.value;
-    });
-
-    const getTodo = async () => {
-      try {
-        const response = await axios.get("http://localhost:3000/todos");
-        todos.value = response.data;
-        totalCount.value = 0;
-        page.value = 1;
-        totalPage.value = 0
-      } catch (err) {
-        err.value = "서버목록 호출에 실패했습니다";
-      }
+    const updateTodoToast = () => {
+      triggerToast("내용이 업데이트 되었습니다.");
     };
-    getTodo();
-
-    const error = ref("");
-    const addTodo = async (todo) => {
-      try {
-        await axios.post("http://localhost:3000/todos", {
-          subject: todo.subject,
-          complete: todo.complete,
-          id: todo.id,
-        });
-        todos.value.push(todo);
-      } catch (err) {
-        error.value = "목록추가 실패";
-      }
+    const newTodoToast = () => {
+      triggerToast("새글이 등록되었습니다");
     };
-    const deleteTodo = async (index) => {
-      try {
-        const id = todos.value[index].id;
-        await axios.delete("http://localhost:3000/todos/" + id);
-        todos.value.splice(index, 1);
-      } catch (error) {
-        error.value = "삭제 요청이 거부되었습니다.";
-      }
+    const updateLoadFailToast = () => {
+      triggerToast("내용을 가지고 오는 데 실패하였습니다.", "danger");
     };
-
-    const toggleTodo = async (index) => {
-      try {
-        const id = todos.value[index].id;
-        const complete = !todos.value[index].complete;
-        await axios.patch("http://localhost:3000/todos/" + id, {
-          complete,
-        });
-        todos.value[index].complete = complete;
-      } catch (error) {
-        error.value = "업데이트에 실패하였습니다.";
-      }
+    const updateTodoFailToast = () => {
+      triggerToast("업데이트 실패하였습니다.", "danger");
     };
-
+    const errSubjectToast = () => {
+      triggerToast("제목을 입력하세요.", "danger");
+    };
+    const newTodoFailToast = () => {
+      triggerToast("새글 등록에 실패하였습니다.", "danger");
+    };
+    const listLoadFailToast = () => {
+      triggerToast("목록 호출에 실패하였습니다..", "danger");
+    };
+    const deleteTodoToast = () => {
+      triggerToast("삭제하였습니다.");
+    };
+    const deleteTodoFailToast = () => {
+      triggerToast("삭제에 실패하였습니다.", "danger");
+    };
     return {
-      todos,
-      addTodo,
-      deleteTodo,
-      toggleTodo,
-      searchText,
-      filterTodos,
-      error,
+      updateTodoToast,
+      newTodoToast,
+      updateLoadFailToast,
+      updateTodoFailToast,
+      errSubjectToast,
+      newTodoFailToast,
+      listLoadFailToast,
+      deleteTodoToast,
+      deleteTodoFailToast,
+
+      showToast,
+      toastMessage,
+      toastType,
+      triggerToast,
     };
   },
 };
 </script>
 <style>
 #app {
-}
-.todostyle {
-  text-decoration: line-through;
-  color: gray;
 }
 </style>
