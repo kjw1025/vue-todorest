@@ -1,11 +1,12 @@
-# Todo 앱 
+# Todo 앱 (kakao API)
 
 ## 프로젝트
-php 와 vue 를 이용한 기본적인 ToDo앱 <br>
-기본적인 CRUD 적용
-#### 사용기술 : Vue, php, JavaScript, CSS
+db.json 을 이용해 목업서버 구축후 기본적인 CRUD 작업 <br>
+kakao API 이용해 로그인 후 이용 가능하도록 설정
 
-##### 라이브러리 : axios, Vuex,
+#### 사용기술 : Vue, JavaScript, CSS
 
-<img src="https://user-images.githubusercontent.com/107607247/196373708-719815b0-889f-4f76-a7bb-2b45b2485bcf.png"  width="300">
+##### 라이브러리 : axios, Vuex, vue-router, lodash, Bootstrap
+
+<img src=""  width="300">
 
